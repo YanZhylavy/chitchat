@@ -10,12 +10,20 @@ class UserRegistrationSerializer(serializers.Serializer):
         validators=[UniqueValidator(queryset=CustomUser.objects.all())]
         )
     
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+        )
     password = serializers.CharField(write_only=True, required=True)
     first_name = serializers.CharField(required=False)
     last_name = serializers.CharField(required=False)
-    email = serializers.EmailField(required=False)
 
 
     def create(self, validated_data):
         return CustomUser.objects.create_user(**validated_data)
 
+
+class UsersListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ('username', 'email', 'first_name', 'last_name')

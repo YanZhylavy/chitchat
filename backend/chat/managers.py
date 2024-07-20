@@ -10,7 +10,7 @@ class MongoManager:
     collection: Collection = DB["conversations"]
 
     @classmethod
-    def create_conversation(cls, initiator_id: int, participant_id: int):
+    def get_or_create_conversation(cls, initiator_id: int, participant_id: int) -> dict:
         if (existing_conversation := cls.get_conversation(initiator_id, participant_id, projection=["participant_id",])):
             return existing_conversation
         model = Conversation(initiator_id=initiator_id,
@@ -26,17 +26,21 @@ class MongoManager:
         ]}
         conversation = cls.collection.find_one(query, projection=projection)
         if conversation:
-            return cls._id_to_string(conversation)
+            return str(conversation["_id"])
 
     @classmethod
-    def _id_to_string(cls, document: dict) -> dict:
-        document["_id"] = str(document["_id"])
-        return document
-
-    @classmethod
-    def push_message(cls, document_id: str, message: dict):
-        validated_message = Message(**message)
+    def push_message(cls, document_id: str, message: dict) -> tuple[int, dict]:
+        validated_message = Message(**message).model_dump()
         filter = {"_id": ObjectId(document_id)}
-        query = {"$push": {"messages": validated_message.model_dump()}}
+        query = {"$push": {"messages": validated_message}}
         result = cls.collection.update_one(filter, query)
-        return result.modified_count == 1
+        return  (result.modified_count, validated_message)
+
+    @classmethod
+    def get_paginated_messages(cls, conversation_id, chunk, chunk_size=20):
+        skip = (chunk - 1) * chunk_size   
+        result = cls.collection.find_one(
+            {"_id": ObjectId(conversation_id)},
+            {"messages": {"$slice": [skip, chunk_size]}}
+        ) 
+        return result["messages"] if result else []

@@ -117,3 +117,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CLIENT = pymongo.MongoClient(os.environ.get('MONGO_URL'), maxPoolSize=400)
 DB = CLIENT[os.environ.get('MONGO_DATABASE')]
+
+
+# Daphne
+ASGI_APPLICATION = "chitchat.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}

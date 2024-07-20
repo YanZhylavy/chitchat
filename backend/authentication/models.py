@@ -19,7 +19,7 @@ class CustomUser(AbstractBaseUser,PermissionsMixin):
     last_name = models.CharField(max_length=20)
     registered_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField()
-    related_users = models.ManyToManyField("self", blank=True, null=True)
+    related_users = models.ManyToManyField("self", blank=True)
 
     USERNAME_FIELD = "username"
     

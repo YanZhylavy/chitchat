@@ -14,3 +14,11 @@ class UsersListView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     filter_backends = (SearchFilter, )
     search_fields = ["username", "email","first_name", "last_name"]
+
+
+class RelatedUsersListView(ListAPIView):
+    serializer_class = UsersListSerializer
+    permission_classes = (IsAuthenticated,)
+    
+    def get_queryset(self):
+        return self.request.user.related_users.all()
